@@ -18,7 +18,7 @@ with st.sidebar:
     )
     data_points = st.slider("Number of candles", 50, 1000, 100)
 
-def get_binance_ohlc(symbol, interval, limit=1000):
+def get_binance_ohlc(symbol, interval, limit=5000):
     url = "https://api.binance.com/api/v1/klines"
     params = {
         "symbol": symbol,

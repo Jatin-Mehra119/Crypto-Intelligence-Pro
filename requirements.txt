@@ -1,0 +1,10 @@
+requests 
+pandas 
+streamlit 
+pydantic-ai 
+coingecko-api
+python-dotenv
+eventregistry
+newspaper3k
+plotly 
+crawl4ai
