@@ -74,12 +74,12 @@ if st.button("Run Advanced Analysis"):
                 pos_percent = len(sentiment_df[sentiment_df['sentiment'] == 'Positive'])/len(sentiment_df)
                 st.metric("Positive Sentiment", f"{pos_percent:.0%}")
             with mcol3:
-                st.metric("30D Volatility", f"{ohlc_data['close'].pct_change().std():.2%}")
+                st.metric(f"{days}D Volatility", f"{ohlc_data['close'].pct_change().std():.2%}")
             
             # News Insights
             st.subheader("Critical Market Updates")
             for idx, (article, analysis) in enumerate(zip(articles, sentiment_results)):
-                with st.expander(f"{analysis['summary'][:60]}... ({'⭐'*(idx+1)})"):
+                with st.expander(f"{analysis['summary'][:300]}... ({'⭐'*(idx+1)})"):
                     st.markdown(f"**Source**: {article['source']}")
                     st.markdown(f"**Sentiment**: `{analysis['sentiment']}` (Confidence: {analysis['confidence']:.0%})")
                     st.markdown(f"**Key Terms**: {', '.join(analysis['key_terms'])}")
