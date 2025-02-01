@@ -18,7 +18,7 @@ def fetch_ohlc(coin_id: str, vs_currency: str, days: int):
     """
     if not coin_id:
         logger.error("Received empty coin_id.")
-        st.error("Please enter a valid cryptocurrency identifier. For valid identifiers see our community guidelines.")
+        st.error("Please enter a valid cryptocurrency identifier. For valid identifiers see {https://docs.google.com/spreadsheets/d/1wTTuxXt8n9q7C4NDXqQpI3wpKu1_5bGVmP9Xz0XGSyU/edit?gid=0#gid=0}")
         return pd.DataFrame()
     
     if days <= 0:

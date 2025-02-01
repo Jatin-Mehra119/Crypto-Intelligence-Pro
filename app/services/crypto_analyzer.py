@@ -74,10 +74,12 @@ class CryptoAnalyzer:
     async def generate_market_insights(self, sentiment_data: pd.DataFrame, price_data: pd.DataFrame, vol: int):
         """Generate comprehensive market analysis using Groq"""
         try:
+            price_change = price_data['close'].pct_change(periods=vol).iloc[-1]
             prompt = f"""
             Analyze this market data:
             - Current Price: {price_data['close'].iloc[-1]:.2f}
             - {vol}D Volatility: {price_data['close'].pct_change().std():.2%}
+            - Price Change in last {vol} Day: {price_change:.2%}
             - Market Sentiment: {sentiment_data['sentiment'].value_counts().to_dict()}
             
             Provide:
