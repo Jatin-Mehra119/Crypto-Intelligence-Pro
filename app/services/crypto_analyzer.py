@@ -74,21 +74,57 @@ class CryptoAnalyzer:
     async def generate_market_insights(self, sentiment_data: pd.DataFrame, price_data: pd.DataFrame, vol: int):
         """Generate comprehensive market analysis using Groq"""
         try:
-            price_change = price_data['close'].pct_change(periods=vol).iloc[-1]
+            # Validate vol parameter
+            if vol <= 0:
+                return "Error: 'vol' must be a positive integer."
+            
+            # Validate price_data has enough rows for calculations
+            if len(price_data) < vol:
+                return f"Error: Not enough data to calculate {vol}-day volatility. Only {len(price_data)} rows available."
+            
+            # Create a copy of price_data and preprocess it
+            df = price_data.copy()
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df.set_index('timestamp', inplace=True)
+            
+            # Calculate 7-day and 14-day SMAs
+            df['7-day SMA'] = df['close'].rolling(window=7).mean()
+            df['14-day SMA'] = df['close'].rolling(window=14).mean()
+            
+            # Determine SMA crossover signals
+            df['SMA_Crossover'] = None
+            df.loc[df['7-day SMA'] > df['14-day SMA'], 'SMA_Crossover'] = 'Bullish'
+            df.loc[df['7-day SMA'] < df['14-day SMA'], 'SMA_Crossover'] = 'Bearish'
+            
+            # Get the latest SMA crossover signal
+            latest_sma_signal = df['SMA_Crossover'].iloc[-1]
+            
+            # Calculate additional metrics from the price data
+            price_change_7d = df['close'].pct_change(periods=7).iloc[-1]
+            price_change_30d = df['close'].pct_change(periods=30).iloc[-1]
+            volatility = df['close'].pct_change().rolling(window=vol).std().iloc[-1]
+            
+            # Calculate sentiment distribution
+            sentiment_distribution = sentiment_data['sentiment'].value_counts(normalize=True).to_dict()
+            
+            # Prepare the prompt with detailed metrics and SMA crossover insights
             prompt = f"""
             Analyze this market data:
-            - Current Price: {price_data['close'].iloc[-1]:.2f}
-            - {vol}D Volatility: {price_data['close'].pct_change().std():.2%}
-            - Price Change in last {vol} Day: {price_change:.2%}
-            - Market Sentiment: {sentiment_data['sentiment'].value_counts().to_dict()}
+            - Current Price: {df['close'].iloc[-1]:.2f}
+            - 7D Price Change: {price_change_7d:.2%}
+            - 30D Price Change: {price_change_30d:.2%}
+            - {vol}D Volatility: {volatility:.2%}
+            - Market Sentiment Distribution: {sentiment_distribution}
+            - SMA Crossover Signal: {latest_sma_signal}
             
             Provide:
-            1. Short-term (1 week) price prediction
-            2. Key risk factors
-            3. Recommended trading strategies
-            4. Long-term outlook
+            1. Short-term (1 week) price prediction based on recent trends, sentiment, and SMA crossover signals.
+            2. Key risk factors considering volatility, sentiment shifts, and SMA crossover signals.
+            3. Recommended trading strategies based on current market conditions and SMA crossover signals.
+            4. Long-term outlook considering historical performance, market sentiment, and SMA crossover signals.
             """
             
+            # Generate the response using Groq
             response = self.groq_client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model=self.model_name,
