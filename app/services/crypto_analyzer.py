@@ -56,10 +56,13 @@ class CryptoAnalyzer:
                 response_format={"type": "json_object"}
             )
             
-            # Safely parse the JSON response
-            response_data = json.loads(chat_completion.choices[0].message.content)
+            response_str = chat_completion.choices[0].message.content
+            try:
+                response_data = json.loads(response_str)
+            except json.JSONDecodeError as json_err:
+                st.error(f"JSON decode error: {json_err}")
+                return None
             
-            # Ensure 'confidence' field is present, default to 0.5 if missing
             if 'confidence' not in response_data:
                 response_data['confidence'] = 0.5
             
@@ -71,7 +74,6 @@ class CryptoAnalyzer:
     async def generate_market_insights(self, sentiment_data: pd.DataFrame, price_data: pd.DataFrame, vol: int):
         """Generate comprehensive market analysis using Groq"""
         try:
-            # Prepare the prompt for market insights
             prompt = f"""
             Analyze this market data:
             - Current Price: {price_data['close'].iloc[-1]:.2f}
@@ -85,7 +87,6 @@ class CryptoAnalyzer:
             4. Long-term outlook
             """
             
-            # Get insights from Groq
             response = self.groq_client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model=self.model_name,
@@ -93,7 +94,6 @@ class CryptoAnalyzer:
                 max_tokens=5000
             )
             
-            # Return the generated insights
             return response.choices[0].message.content
         except Exception as e:
             return f"Insights generation failed: {str(e)}"
