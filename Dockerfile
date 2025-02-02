@@ -12,6 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project
 COPY . .
 
+# Set a writable cache directory for crawl4ai
+ENV CRAWL4AI_CACHE_DIR="/app/.crawl4ai"
+RUN mkdir -p /app/.crawl4ai && chmod 777 /app/.crawl4ai
+
 # Accept the secret token as a build argument
 ARG GROQ_API_KEY
 
