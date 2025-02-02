@@ -12,10 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project
 COPY . .
 
-# Set a writable cache directory for crawl4ai
-ENV CRAWL4AI_CACHE_DIR="/app/.crawl4ai"
-RUN mkdir -p /app/.crawl4ai && chmod 777 /app/.crawl4ai
-
 # Accept the secret token as a build argument
 ARG GROQ_API_KEY
 
@@ -32,12 +28,14 @@ ENV GROQ_API_KEY=${GROQ_API_KEY}
 RUN playwright install 
 RUN playwright install-deps
 
+# Set environment variable before execution
+ENV CRAWL4AI_CACHE_DIR="/app/.crawl4ai"
+
 # Expose Streamlit port
 EXPOSE 7860
 
-# Set environment variables
-ENV STREAMLIT_SERVER_PORT=8501 \
-    STREAMLIT_SERVER_ADDRESS=0.0.0.0
+# Ensure correct permissions
+RUN mkdir -p $CRAWL4AI_CACHE_DIR && chmod 777 $CRAWL4AI_CACHE_DIR
 
 # Run the Streamlit app
-CMD ["python", "-m","streamlit", "run", "app/main.py",  "--server.port=7860", "--server.address=0.0.0.0"]
+CMD ["sh", "-c", "export CRAWL4AI_CACHE_DIR=/app/.crawl4ai && python -m streamlit run app/main.py --server.port=7860 --server.address=0.0.0.0"]
