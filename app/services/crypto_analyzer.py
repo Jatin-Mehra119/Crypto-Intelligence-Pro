@@ -37,7 +37,7 @@ class CryptoAnalyzer:
                 'source': url,
                 'content': result.extracted_content,
                 'markdown': result.markdown
-            })
+            }) 
         return articles
 
     async def analyze_sentiment(self, content: str):

@@ -42,7 +42,7 @@ if submit_button:
         async def run_analysis():
             articles = await analyzer.fetch_crypto_content(coin_id)
             ohlc_data = fetch_ohlc(coin_id, vs_currency, days)
-            sentiment_tasks = [analyzer.analyze_sentiment(article['content']) for article in articles]
+            sentiment_tasks = [analyzer.analyze_sentiment(article['markdown']) for article in articles]
             sentiment_results = await asyncio.gather(*sentiment_tasks)
             # Filter out any failed sentiment analyses
             sentiment_results = [s.model_dump() for s in sentiment_results if s]
