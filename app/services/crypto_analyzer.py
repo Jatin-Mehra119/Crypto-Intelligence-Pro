@@ -35,7 +35,7 @@ class CryptoAnalyzer:
         for url in search_urls:
             result = await self.crawler.arun(url=url, config=config)
             all_links.extend(result.links)
-
+        st.w(f"Found {all_links}")
         return all_links
 
     async def fetch_crypto_content(self, links: list):
@@ -51,13 +51,13 @@ class CryptoAnalyzer:
         )
 
         articles = []
+
         for link in links:
             result = await self.crawler.arun(url=link, config=config)
             articles.append({
                 'source': link,
                 'content': result.extracted_content,
-                'markdown': result.markdown,
-                'links': result.links
+                'markdown': result.markdown
             })
 
         return articles
