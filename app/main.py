@@ -5,7 +5,7 @@ from app.services.data_fetcher import fetch_ohlc
 from app.config import groq_client
 import pandas as pd
 import plotly.express as px
-from app.utils.visualization import plot_price_trend, plot_sentiment_distribution
+from app.utils.visualization import plot_price_trend, plot_sentiment_distribution, plot_candlestick, plot_ohlc, show_data
 
 # Set page config and custom CSS styling
 st.set_page_config(page_title="Crypto Intelligence Pro", layout="wide", page_icon="₿")
@@ -30,7 +30,7 @@ with col2:
 with st.form("analysis_form"):
     coin_id = st.text_input("Enter Cryptocurrency:", "bitcoin").lower().strip()
     vs_currency = st.selectbox("Base Currency:", ["usd", "eur", "btc", "eth"])
-    days = st.selectbox("Analysis Period (days):", [7, 14, 30, 90, 365])
+    days = 30
     submit_button = st.form_submit_button("Run Advanced Analysis")
 
 if submit_button:
@@ -77,6 +77,18 @@ if submit_button:
                     st.metric("Positive Sentiment", f"{(positive_count/len(sentiment_df)):.0%}")
                 with mcol3:
                     st.metric(f"{days}D Volatility", f"{ohlc_data['close'].pct_change().std():.2%}")
+                
+                # New Technical Analysis Charts using additional plots
+                st.subheader("Technical Analysis Charts")
+                tech_col1, tech_col2 = st.columns(2)
+                with tech_col1:
+                    # Candlestick chart visualization from visualization.py
+                    fig_candlestick = plot_candlestick(ohlc_data, f"{coin_id.upper()} Candlestick Chart")
+                    st.plotly_chart(fig_candlestick, use_container_width=True)
+                with tech_col2:
+                    # OHLC chart visualization from visualization.py
+                    fig_ohlc = plot_ohlc(ohlc_data, f"{coin_id.upper()} OHLC Chart")
+                    st.plotly_chart(fig_ohlc, use_container_width=True)
                 
                 # News Insights
                 st.subheader("Critical Market Updates")
