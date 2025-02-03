@@ -53,5 +53,8 @@ USER appuser
 # Ensure that the crawl4ai cache directory exists and is writable
 RUN mkdir -p /app/.crawl4ai && chmod 777 /app/.crawl4ai
 
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
+RUN echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
 # Set the default command to run your Streamlit application
 CMD ["python", "-m", "streamlit", "run", "app/main.py", "--server.port=7860", "--server.address=0.0.0.0"]
