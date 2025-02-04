@@ -1,14 +1,3 @@
----
-license: mit
-title: Crypto-Intelligence-Pro
-sdk: docker
-emoji: 💻
-colorFrom: pink
-colorTo: blue
-pinned: true
-short_description: Advanced Crypto Market Analysis & Forecasting Tool.
----
-
 # Crypto Intelligence Pro
 
 Crypto Intelligence Pro is an advanced market analysis tool for cryptocurrencies. It provides real-time price trends, sentiment analysis, technical indicators, and AI-powered market forecasts.
