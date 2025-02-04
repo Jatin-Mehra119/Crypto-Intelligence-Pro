@@ -1,65 +1,89 @@
+import os
 import json
 import pandas as pd
 import asyncio
+from pydantic import BaseModel
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, BrowserConfig, CacheMode
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
 from app.models import SentimentResponse
 import streamlit as st
-import os
+import feedparser
+
+class LinkItem(BaseModel):
+    href: str
+    text: str = ""
+    title: str = ""
+    base_domain: str = ""
 
 class CryptoAnalyzer:
     def __init__(self, groq_client):
-        self.crawler = AsyncWebCrawler(config=BrowserConfig(headless=True))
+        # Removing self.crawler usage and instantiating per crawl.
         self.model_name = "llama-3.1-8b-instant"
         self.groq_client = groq_client
 
     async def fetch_crypto_links(self, coin_name: str):
-        """Fetch article links related to the cryptocurrency from core resources."""
-        search_urls = [
-            f"https://www.coindesk.com/search/?s={coin_name}",
-            f"https://cointelegraph.com/search?query={coin_name}",
-            f"https://news.google.com/search?q={coin_name}+cryptocurrency"
-        ]
+        """Fetch the first 10 article links related to the cryptocurrency using Google News RSS feed."""
+        rss_url = f"https://news.google.com/rss/search?q={coin_name}+cryptocurrency&hl=en-IN&gl=IN&ceid=IN:en"
+        # Run feedparser.parse in a thread because it's synchronous.
+        feed = await asyncio.to_thread(feedparser.parse, rss_url)
+        links = []
+        for entry in feed.entries[:10]:
+            link = entry.get("link", "")
+            title = entry.get("title", "")
+            base_domain = link.split("://")[1].split("/")[0] if "://" in link else ""
+            links.append({
+                "link": link,
+                "text": title,
+                "title": title,
+                "base_domain": base_domain
+            })
+        return links
 
-        config = CrawlerRunConfig(
-            cache_mode=CacheMode.BYPASS,
-            extraction_strategy=LLMExtractionStrategy(
-                provider="groq",
-                api_token=os.getenv("GROQ_API_KEY"),
-                model_name=self.model_name,
-                max_tokens=4000
-            )
+    async def fetch_crypto_content(self, links: list, coin_id: str):
+        """Fetch and process crypto-related content from the provided links."""
+        # Define extraction strategy with updated instructions.
+        extraction_strategy = LLMExtractionStrategy(
+            provider="groq",
+            model_name=self.model_name,
+            api_token=os.getenv("GROQ_API_KEY"),
+            extraction_type="schema",
+            # Schema expecting a JSON object with a single key 'content'
+            schema={"type": "object", "properties": {"content": {"type": "string"}}},
+            instruction=(
+               f"Extract the main article content as plain text from the HTML. Look for {coin_id} mentions"
+                "Ignore navigation, advertisements, and boilerplate text. "
+                "Return a JSON object with a single key 'content'."
+            ),
+            chunk_token_threshold=1200,
+            overlap_rate=0.1,
+            apply_chunking=True,
+            input_format="html",
+            extra_args={"temperature": 0.1, "max_tokens": 4000}
         )
 
-        all_links = []
-        for url in search_urls:
-            result = await self.crawler.arun(url=url, config=config)
-            all_links.extend(result.links)
-        st.w(f"Found {all_links}")
-        return all_links
-
-    async def fetch_crypto_content(self, links: list):
-        """Fetch and process crypto-related content from the provided links."""
         config = CrawlerRunConfig(
             cache_mode=CacheMode.BYPASS,
-            extraction_strategy=LLMExtractionStrategy(
-                provider="groq",
-                api_token=os.getenv("GROQ_API_KEY"),
-                model_name=self.model_name,
-                max_tokens=4000
-            )
+            extraction_strategy=extraction_strategy
         )
 
         articles = []
-
-        for link in links:
-            result = await self.crawler.arun(url=link, config=config)
-            articles.append({
-                'source': link,
-                'content': result.extracted_content,
-                'markdown': result.markdown
-            })
-
+        async with AsyncWebCrawler(config=BrowserConfig(headless=True)) as crawler:
+            for link_obj in links:
+                url = link_obj.get("link", "")
+                if not url:
+                    print("Skipping empty URL for link object:", link_obj)
+                    continue
+                result = await crawler.arun(url, config=config)
+                if result.success:
+                    try:
+                        data = json.loads(result.extracted_content)
+                        article_content = data.get("content", "")
+                    except Exception as e:
+                        print(f"Failed to parse extracted content for {url}: {e}")
+                        article_content = ""
+                    articles.append({"url": url, "content": article_content})
+                else:
+                    print(f"Content crawl failed for {url}: {result.error_message}")
         return articles
 
     async def analyze_sentiment(self, content: str):

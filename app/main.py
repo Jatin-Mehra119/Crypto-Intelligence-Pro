@@ -40,11 +40,11 @@ if submit_button:
         analyzer = CryptoAnalyzer(groq_client)
 
         async def run_analysis():
-            articles = await analyzer.fetch_crypto_content(coin_id)
+            links = await analyzer.fetch_crypto_links(coin_id)
+            articles = await analyzer.fetch_crypto_content(links, coin_id)
             ohlc_data = fetch_ohlc(coin_id, vs_currency, days)
-            sentiment_tasks = [analyzer.analyze_sentiment(article['markdown']) for article in articles]
+            sentiment_tasks = [analyzer.analyze_sentiment(article['content']) for article in articles]
             sentiment_results = await asyncio.gather(*sentiment_tasks)
-            # Filter out any failed sentiment analyses
             sentiment_results = [s.model_dump() for s in sentiment_results if s]
             return articles, ohlc_data, sentiment_results
 
@@ -95,11 +95,11 @@ if submit_button:
                 for idx, (article, analysis) in enumerate(zip(articles, sentiment_results)):
                     summary_preview = analysis['summary'][:300]
                     with st.expander(f"{summary_preview}... ({'⭐'*(idx+1)})"):
-                        st.markdown(f"**Source**: {article['source']}")
+                        st.markdown(f"**Source**: {article['url']}")
                         st.markdown(f"**Sentiment**: `{analysis['sentiment']}` (Confidence: {analysis['confidence']:.0%})")
                         st.markdown(f"**Key Terms**: {', '.join(analysis['key_terms'])}")
                         st.markdown(f"**Summary**: {analysis['summary']}")
-                        st.markdown(f"[Read Full Article]({article['source']})")
+                        st.markdown(f"[Read Full Article]({article['url']})")
                 
                 # Predictive Insights
                 st.subheader("AI-Powered Market Forecast")
