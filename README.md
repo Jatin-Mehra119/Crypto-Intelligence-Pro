@@ -49,7 +49,7 @@ crypto_intelligence_pro/
 ### 1. Clone the repository
 - Use git to clone the project
 ```
-git clone https://github.com/Jatin-Mehra119/Crypto-Dash.git
+git clone https://github.com/Jatin-Mehra119/Crypto-Intelligence-Pro.git
 ```
 ```
 cd Crypto-Dash
