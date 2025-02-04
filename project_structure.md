@@ -1,3 +1,4 @@
+```
 crypto_intelligence_pro/
 │
 ├── app/
@@ -14,6 +15,8 @@ crypto_intelligence_pro/
 │   │   └── visualization.py    # Visualization helper functions
 │   └── config.py            # Configuration and environment variables
 │
+├── README_hf.md # Readem for huggingface space
 ├── requirements.txt         # List of dependencies
 ├── .env                     # Environment variables
 └── README.md                # Project documentation
+```
