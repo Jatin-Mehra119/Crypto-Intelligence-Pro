@@ -50,8 +50,13 @@ EXPOSE 7860
 # Switch to non-root user
 USER appuser
 
+
 # Ensure that the crawl4ai cache directory exists and is writable
 RUN mkdir -p /app/.crawl4ai && chmod 777 /app/.crawl4ai
+
+# Install Playwright browsers as appuser
+RUN playwright install
+
 
 # Set the default command to run your Streamlit application
 CMD ["python", "-m", "streamlit", "run", "app/main.py", "--server.port=7860", "--server.address=0.0.0.0"]
