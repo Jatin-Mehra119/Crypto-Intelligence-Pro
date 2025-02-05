@@ -2,11 +2,9 @@
 
 Crypto Intelligence Pro is an advanced market analysis tool for cryptocurrencies. It provides real-time price trends, sentiment analysis, technical indicators, and AI-powered market forecasts.
 
-  
+**Deployed on:** Google Cloud Platform ([App Link](https://crypto-intelligence-pro-61162913193.asia-south2.run.app/))
 
 ## Features
-
-  
 
 -  **Real-Time Data Fetching:** Retrieves historical OHLC price data from CoinGecko using cached API requests through [`app/services/data_fetcher.py`](app/services/data_fetcher.py).
 
