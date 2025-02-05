@@ -9,12 +9,6 @@ from app.models import SentimentResponse
 import streamlit as st
 import feedparser
 
-class LinkItem(BaseModel):
-    href: str
-    text: str = ""
-    title: str = ""
-    base_domain: str = ""
-
 class CryptoAnalyzer:
     def __init__(self, groq_client):
         # Removing self.crawler usage and instantiating per crawl.
