@@ -71,7 +71,14 @@ if submit_button:
                 st.subheader("Market Health Indicators")
                 mcol1, mcol2, mcol3 = st.columns(3)
                 with mcol1:
-                    st.metric("Current Price", f"${ohlc_data['close'].iloc[-1]:,.2f}")
+                    if vs_currency == "usd":
+                        st.metric("Current Price", f"${ohlc_data['close'].iloc[-1]:,.2f}")
+                    elif vs_currency == "eur":
+                        st.metric("Current Price", f"€{ohlc_data['close'].iloc[-1]:,.2f}")
+                    elif vs_currency == "btc":
+                        st.metric("Current Price", f"{ohlc_data['close'].iloc[-1]:,.8f} BTC")
+                    else:
+                        st.metric("Current Price", f"{ohlc_data['close'].iloc[-1]:,.8f} ETH")
                 with mcol2:
                     positive_count = len(sentiment_df[sentiment_df['sentiment'] == 'Positive'])
                     st.metric("Positive Sentiment", f"{(positive_count/len(sentiment_df)):.0%}")
