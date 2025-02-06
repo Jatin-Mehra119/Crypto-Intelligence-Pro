@@ -17,18 +17,7 @@ WORKDIR /app
 RUN useradd -m -s /bin/bash appuser && \
     mkdir -p /app/.crawl4ai && chown -R appuser:appuser /app/.crawl4ai
 
-# Accept the secret token as a build argument
-ARG GROQ_API_KEY
-
-# Expose the secret GROQ_API_KEY at build time and set it as an environment variable
-RUN --mount=type=secret,id=GROQ_API_KEY,mode=0444,required=true \
-    export GROQ_API_KEY=$(cat /run/secrets/GROQ_API_KEY) && \
-    echo "GROQ_API_KEY is set."
-
-# Set environment variables for runtime:
-# - The secret API key
-# - The crawl4ai cache directory so that the library does not default to '/.crawl4ai'
-ENV GROQ_API_KEY=${GROQ_API_KEY}  
+# - The crawl4ai cache directory so that the library does not default to '/.crawl4ai' 
 ENV CRAWL4AI_CACHE_DIR="/app/.crawl4ai"  
 ENV PYTHONPATH=/app
 
@@ -45,7 +34,7 @@ RUN playwright install
 RUN playwright install-deps
 
 # Expose the Streamlit port
-EXPOSE 7860
+EXPOSE 8080
 
 # Switch to non-root user
 USER appuser
@@ -53,5 +42,8 @@ USER appuser
 # Ensure that the crawl4ai cache directory exists and is writable
 RUN mkdir -p /app/.crawl4ai && chmod 777 /app/.crawl4ai
 
+# Install Playwright browsers as appuser
+RUN playwright install
+
 # Set the default command to run your Streamlit application
-CMD ["python", "-m", "streamlit", "run", "app/main.py", "--server.port=7860", "--server.address=0.0.0.0"]
+CMD ["python", "-m", "streamlit", "run", "app/main.py", "--server.port=8080", "--server.address=0.0.0.0"]
