@@ -13,7 +13,7 @@ short_description: Advanced Crypto Market Analysis & Forecasting Tool.
 
 Crypto Intelligence Pro is an advanced market analysis tool for cryptocurrencies. It provides real-time price trends, sentiment analysis, technical indicators, and AI-powered market forecasts.
 
-  
+- Also : **Deployed on:** Google Cloud Platform ([App Link](https://crypto-intelligence-pro-61162913193.asia-south2.run.app/))
 
 ## Features
 
